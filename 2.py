@@ -20,3 +20,20 @@ class Grafo:
             for ciudad_conectada, distancia in conexiones.items():
                 print(f"- {ciudad_conectada}: {distancia}")
             print()
+# Creamos una instancia de la clase Grafo
+red_transporte = Grafo()
+
+# Agregamos las ciudades al grafo
+red_transporte.agregar_ciudad("Ciudad_A")
+red_transporte.agregar_ciudad("Ciudad_B")
+red_transporte.agregar_ciudad("Ciudad_C")
+red_transporte.agregar_ciudad("Ciudad_D")
+
+# Agregamos las conexiones y distancias entre las ciudades
+red_transporte.agregar_conexion("Ciudad_A", "Ciudad_B", 10)
+red_transporte.agregar_conexion("Ciudad_A", "Ciudad_C", 12)
+red_transporte.agregar_conexion("Ciudad_B", "Ciudad_D", 5)
+red_transporte.agregar_conexion("Ciudad_C", "Ciudad_D", 8)
+
+# Mostramos el grafo resultante
+red_transporte.mostrar_grafo()
