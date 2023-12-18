@@ -13,6 +13,8 @@ Además, se requiere mantener un registro ordenado de las distancias entre ciuda
 esto, se debe utilizar un árbol binario de búsqueda (BST) donde las claves sean las
 distancias y los valores sean las ciudades conectadas por esa distancia.
 
+Se te pide implementar lo siguiente:
+
 - Una clase Grafo que represente el grafo de ciudades y sus conexiones. Debe
 permitir añadir ciudades, agregar conexiones entre ellas con sus respectivos pesos y
 mostrar el grafo resultante.
