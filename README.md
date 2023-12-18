@@ -1,6 +1,6 @@
 # Trabajo final: Red de Transporte.
 ## Componentes del grupo: frankiyonki, clauloro y alejandru00.
-## Link: [Github: ]
+## Link: [Github: https://github.com/clauloro/Red_de_Transporte.git]
 ----------------------------------
 ## Ejercicio:
 
@@ -13,17 +13,20 @@ Además, se requiere mantener un registro ordenado de las distancias entre ciuda
 esto, se debe utilizar un árbol binario de búsqueda (BST) donde las claves sean las
 distancias y los valores sean las ciudades conectadas por esa distancia.
 
-● Una clase Grafo que represente el grafo de ciudades y sus conexiones. Debe
+- Una clase Grafo que represente el grafo de ciudades y sus conexiones. Debe
 permitir añadir ciudades, agregar conexiones entre ellas con sus respectivos pesos y
 mostrar el grafo resultante.
-● Un método para encontrar la ruta más corta entre dos ciudades. Deberás
+
+- Un método para encontrar la ruta más corta entre dos ciudades. Deberás
 implementar una función ruta_mas_corta(origen, destino) que devuelva la ruta
 más corta entre las ciudades origen y destino (el camino de ciudades recorridas),
 junto con la distancia total de esa ruta.
-● Integrar un BST para mantener un registro ordenado de las distancias entre
+
+- Integrar un BST para mantener un registro ordenado de las distancias entre
 ciudades. Implementa funciones para agregar una nueva distancia con sus ciudades
 correspondientes y para mostrar el registro ordenado.
-● Un método que seleccione una colección de aristas tal que el grafo quede conectado
+
+- Un método que seleccione una colección de aristas tal que el grafo quede conectado
 y la suma de las distancias sea mínima (Árbol de recubrimiento mínimo).
 
 Consideraciones:
@@ -32,6 +35,6 @@ Consideraciones:
 adyacencia.
 
 - Las ciudades pueden ser representadas por números o nombres.
-- 
+
 - Proporciona ejemplos de uso de tu implementación con un conjunto de ciudades y
 sus conexiones.
