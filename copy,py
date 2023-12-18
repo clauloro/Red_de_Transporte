@@ -1,0 +1,177 @@
+import networkx as nx
+import matplotlib.pyplot as plt
+import heapq
+
+class Ciudad:
+    def __init__(self, nombre):
+        self.nombre = nombre
+
+class Arista:
+    def __init__(self, ciudad1, ciudad2, distancia):
+        self.ciudad1 = ciudad1
+        self.ciudad2 = ciudad2
+        self.distancia = distancia
+
+class Grafo:
+    def __init__(self):
+        self.ciudades = {}
+        self.aristas = []
+        self.bst = BinarySearchTree()
+
+    def agregar_ciudad(self, nombre):
+        ciudad = Ciudad(nombre)
+        self.ciudades[nombre] = ciudad
+
+    def agregar_arista(self, nombre_ciudad1, nombre_ciudad2, distancia):
+        ciudad1 = self.ciudades[nombre_ciudad1]
+        ciudad2 = self.ciudades[nombre_ciudad2]
+        arista = Arista(ciudad1, ciudad2, distancia)
+        self.aristas.append(arista)
+        self.bst.insert(distancia, [ciudad1.nombre, ciudad2.nombre])
+
+    def visualizar_grafo(self):
+        G = nx.Graph()
+
+        for ciudad in self.ciudades.values():
+            G.add_node(ciudad.nombre)
+
+        for arista in self.aristas:
+            G.add_edge(arista.ciudad1.nombre, arista.ciudad2.nombre, weight=arista.distancia)
+
+        pos = nx.spring_layout(G)
+        labels = nx.get_edge_attributes(G, 'weight')
+        nx.draw(G, pos, with_labels=True, font_weight='bold')
+        nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
+        plt.show()
+
+    def ruta_mas_corta(self, origen, destino):
+        distancias = {ciudad: float('inf') for ciudad in self.ciudades}
+        distancias[origen] = 0
+        padres = {ciudad: None for ciudad in self.ciudades}
+        heap = [(0, origen)]
+
+        while heap:
+            current_dist, current_ciudad = heapq.heappop(heap)
+
+            if current_dist > distancias[current_ciudad]:
+                continue
+
+            for arista in self.aristas:
+                if arista.ciudad1.nombre == current_ciudad:
+                    neighbor = arista.ciudad2.nombre
+                elif arista.ciudad2.nombre == current_ciudad:
+                    neighbor = arista.ciudad1.nombre
+                else:
+                    continue
+
+                new_dist = current_dist + arista.distancia
+
+                if new_dist < distancias[neighbor]:
+                    distancias[neighbor] = new_dist
+                    padres[neighbor] = current_ciudad
+                    heapq.heappush(heap, (new_dist, neighbor))
+
+        # Reconstruir la ruta
+        ruta = []
+        ciudad_actual = destino
+        while ciudad_actual is not None:
+            ruta.insert(0, ciudad_actual)
+            ciudad_actual = padres[ciudad_actual]
+
+        # Mostrar la ruta y la distancia total
+        distancia_total = distancias[destino]
+        print(f'Ruta mas corta desde {origen} hasta {destino}: {ruta}, Distancia total: {distancia_total}')
+
+    def arbol_recubrimiento_minimo(self):
+        aristas_ordenadas = sorted(self.aristas, key=lambda arista: arista.distancia)
+        conjunto_disjunto = {ciudad: ciudad for ciudad in self.ciudades}
+        arbol_recubrimiento = []
+
+        def encontrar_conjunto(ciudad):
+            if conjunto_disjunto[ciudad] != ciudad:
+                conjunto_disjunto[ciudad] = encontrar_conjunto(conjunto_disjunto[ciudad])
+            return conjunto_disjunto[ciudad]
+
+        def unir_conjuntos(conjunto1, conjunto2):
+            conjunto_disjunto[encontrar_conjunto(conjunto1)] = encontrar_conjunto(conjunto2)
+
+        for arista in aristas_ordenadas:
+            if encontrar_conjunto(arista.ciudad1.nombre) != encontrar_conjunto(arista.ciudad2.nombre):
+                arbol_recubrimiento.append(arista)
+                unir_conjuntos(arista.ciudad1.nombre, arista.ciudad2.nombre)
+
+        # Mostrar el Árbol de Recubrimiento Mínimo
+        print("Arbol de Recubrimiento Mínimo:")
+        for arista in arbol_recubrimiento:
+            print(f"{arista.ciudad1.nombre} - {arista.ciudad2.nombre}, Distancia: {arista.distancia}")
+
+    def crear_bst(self):
+        for arista in self.aristas:
+            self.bst.insert(arista.distancia, [arista.ciudad1.nombre, arista.ciudad2.nombre])
+        self.bst.display_ordered_distances()
+
+class BinarySearchTree:
+    def __init__(self):
+        self.root = None
+
+    def insert(self, key, value):
+        self.root = self._insert(self.root, key, value)
+
+    def _insert(self, node, key, value):
+        if node is None:
+            return Node(key, value)
+        if key < node.key:
+            node.left = self._insert(node.left, key, value)
+        elif key > node.key:
+            node.right = self._insert(node.right, key, value)
+        return node
+
+    def display_ordered_distances(self):
+        self._display_ordered_distances(self.root)
+
+    def _display_ordered_distances(self, node):
+        if node:
+            self._display_ordered_distances(node.left)
+            print(f"Distancia: {node.key}, Ciudades: {node.value}")
+            self._display_ordered_distances(node.right)
+
+class Node:
+    def __init__(self, key, value):
+        self.key = key
+        self.value = value
+        self.left = None
+        self.right = None
+
+# Ejemplo de uso
+mi_grafo = Grafo()
+
+# Agregar ciudades
+mi_grafo.agregar_ciudad("A")
+mi_grafo.agregar_ciudad("B")
+mi_grafo.agregar_ciudad("C")
+mi_grafo.agregar_ciudad("D")
+mi_grafo.agregar_ciudad("F")
+mi_grafo.agregar_ciudad("E")
+
+# Agregar aristas con distancias
+mi_grafo.agregar_arista("A", "B", 10)
+mi_grafo.agregar_arista("B", "C", 6)
+mi_grafo.agregar_arista("A", "C", 15)
+mi_grafo.agregar_arista("E", "F", 14)
+mi_grafo.agregar_arista("E", "D", 17)
+mi_grafo.agregar_arista("C", "D", 8)
+mi_grafo.agregar_arista("B", "D", 3)
+mi_grafo.agregar_arista("A", "D", 8)
+mi_grafo.agregar_arista("C", "F", 20)
+mi_grafo.agregar_arista("F", "D", 4)
+
+ciudad1 = input("Ciudad de donde sales: ")
+ciudad2 = input("Ciudad donde llegas: ")
+
+mi_grafo.ruta_mas_corta(ciudad1, ciudad2)
+
+mi_grafo.visualizar_grafo()
+
+
+
+
