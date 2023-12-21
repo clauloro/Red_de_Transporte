@@ -71,16 +71,15 @@ class GrafoCiudades:
                     padres[vecino] = poblacion_actual
                     heapq.heappush(monticulo, (nueva_distancia, vecino))
 
-        # Reconstruir la ruta
         ruta = []
         poblacion_actual = destino
         while poblacion_actual is not None:
             ruta.insert(0, poblacion_actual)
             poblacion_actual = padres[poblacion_actual]
 
-        # Mostrar la ruta y la distancia total
+        # Distancia total + RUTA
         distancia_total = distancias[destino]
-        print(f'Ruta más corta desde {origen} hasta {destino}: {ruta}, Distancia total: {distancia_total}')
+        print(f'La ruta más corta que empieza en {origen} y termina en {destino} es: {ruta}. La distancia total es: {distancia_total}.')
 
     def arbol_recubrimiento_minimo(self):
         conexiones_ordenadas = sorted(self.conexiones, key=lambda conexion: conexion.distancia)
@@ -100,7 +99,7 @@ class GrafoCiudades:
                 arbol_recubrimiento.append(conexion)
                 unir_conjuntos(conexion.poblacion1.nombre, conexion.poblacion2.nombre)
 
-        # Mostrar el Árbol de Recubrimiento Mínimo
+        # Árbol de Recubrimiento Mínimo
         print("Árbol de Recubrimiento Mínimo:")
         for conexion in arbol_recubrimiento:
             print(f"{conexion.poblacion1.nombre} - {conexion.poblacion2.nombre}, Distancia: {conexion.distancia}")
