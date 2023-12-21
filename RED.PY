@@ -1,144 +1,133 @@
-import networkx as nx
-import matplotlib.pyplot as plt
+class Conexion:
+    def __init__(self, poblacion1, poblacion2, distancia):
+        self.poblacion1 = poblacion1
+        self.poblacion2 = poblacion2
+        self.distancia = distancia
 
-class Grafo:
+class Poblacion:
+    def __init__(self, nombre):
+        self.nombre = nombre
+
+class GrafoCiudades:
     def __init__(self):
-        self.G = nx.Graph()
-        self.BST = BST()
+        self.poblaciones = []
+        self.conexiones = []
 
-    def agregar_ciudad(self, nombre):
-        self.G.add_node(nombre)
+    def agregar_poblacion(self, nombre):
+        poblacion = Poblacion(nombre)
+        self.poblaciones.append(poblacion)
 
-    def agregar_conexion(self, ciudad1, ciudad2, distancia):
-        self.G.add_edge(ciudad1, ciudad2, weight=distancia)
-        self.BST.agregar(distancia, (ciudad1, ciudad2))
+    def agregar_conexion(self, nombre_poblacion1, nombre_poblacion2, distancia):
+        poblacion1 = next((p for p in self.poblaciones if p.nombre == nombre_poblacion1), None)
+        poblacion2 = next((p for p in self.poblaciones if p.nombre == nombre_poblacion2), None)
 
-    def mostrar_grafo(self):
-        pos = nx.spring_layout(self.G)
-        labels = nx.get_edge_attributes(self.G, 'weight')
-        nx.draw(self.G, pos, with_labels=True, font_weight='bold')
-        nx.draw_networkx_edge_labels(self.G, pos, edge_labels=labels)
-        plt.show()
+        if poblacion1 and poblacion2:
+            conexion = Conexion(poblacion1, poblacion2, distancia)
+            self.conexiones.append(conexion)
+
+    def visualizar_grafo(self):
+        for conexion in self.conexiones:
+            print(f'{conexion.poblacion1.nombre} --({conexion.distancia})--> {conexion.poblacion2.nombre}')
 
     def ruta_mas_corta(self, origen, destino):
-        distancia_total, ruta = nx.dijkstra_path(self.G, origen, destino, weight='weight')
-        print(f'Ruta más corta desde {origen} hasta {destino}: {ruta}, Distancia total: {distancia_total}')
+        distancia_minima = float('inf')
+        ruta_optima = None
 
-    def arbol_recubrimiento_minimo(self):
-        MST = nx.minimum_spanning_tree(self.G, weight='weight')
-        pos = nx.spring_layout(self.G)
-        labels = nx.get_edge_attributes(self.G, 'weight')
-        nx.draw(MST, pos, with_labels=True, font_weight='bold')
-        nx.draw_networkx_edge_labels(self.G, pos, edge_labels=labels)
-        plt.show()
+        for conexion in self.conexiones:
+            if conexion.poblacion1.nombre == origen:
+                distancia_actual, ruta_actual = self._encontrar_ruta(conexion.poblacion2.nombre, destino, [conexion], set())
+                if distancia_actual < distancia_minima:
+                    distancia_minima = distancia_actual
+                    ruta_optima = ruta_actual
 
-class NodoBST:
-    def __init__(self, clave, valor):
-        self.clave = clave
-        self.valor = valor
-        self.izquierdo = None
-        self.derecho = None
+            elif conexion.poblacion2.nombre == origen:
+                distancia_actual, ruta_actual = self._encontrar_ruta(conexion.poblacion1.nombre, destino, [conexion], set())
+                if distancia_actual < distancia_minima:
+                    distancia_minima = distancia_actual
+                    ruta_optima = ruta_actual
 
-class BST:
-    def __init__(self):
-        self.raiz = None
-
-    def agregar(self, clave, valor):
-        nuevo_nodo = NodoBST(clave, valor)
-
-        if self.raiz is None:
-            self.raiz = nuevo_nodo
+        if ruta_optima:
+            ruta = [conexion.poblacion1.nombre for conexion in ruta_optima] + [destino]
+            print(f'La ruta más corta que empieza en {origen} y termina en {destino} es: {ruta}. La distancia total es: {distancia_minima}.')
         else:
-            self._agregar_recursivo(self.raiz, nuevo_nodo)
+            print(f'No existe una ruta posible desde {origen} hasta {destino}.')
 
-    def _agregar_recursivo(self, nodo_actual, nuevo_nodo):
-        if nuevo_nodo.clave < nodo_actual.clave:
-            if nodo_actual.izquierdo is None:
-                nodo_actual.izquierdo = nuevo_nodo
-            else:
-                self._agregar_recursivo(nodo_actual.izquierdo, nuevo_nodo)
-        else:
-            if nodo_actual.derecho is None:
-                nodo_actual.derecho = nuevo_nodo
-            else:
-                self._agregar_recursivo(nodo_actual.derecho, nuevo_nodo)
+    def todas_las_rutas_posibles(self, origen, destino):
+        rutas = []
+        self._generar_rutas([], origen, destino, rutas, set())
+        print(f'Todas las rutas posibles desde {origen} hasta {destino}:')
+        
+        for i, ruta in enumerate(rutas):
+            distancia_total = sum([conexion.distancia for conexion in ruta])
+            print(f'Ruta {i+1}: {ruta}. Distancia total: {distancia_total}')
 
-    def mostrar_ordenado(self):
-        self._mostrar_ordenado_recursivo(self.raiz)
+    def _encontrar_ruta(self, origen, destino, ruta_actual, visitados):
+        if origen == destino:
+            return sum([conexion.distancia for conexion in ruta_actual]), ruta_actual
 
-    def _mostrar_ordenado_recursivo(self, nodo_actual):
-        if nodo_actual is not None:
-            self._mostrar_ordenado_recursivo(nodo_actual.izquierdo)
-            print(f'Distancia: {nodo_actual.clave}, Ciudades: {nodo_actual.valor}')
-            self._mostrar_ordenado_recursivo(nodo_actual.derecho)
+        visitados.add(origen)
 
-# Ejemplo de uso
-mi_grafo = Grafo()
+        distancia_minima = float('inf')
+        ruta_optima = None
 
-# Agregar ciudades
-mi_grafo.agregar_ciudad("A")
-mi_grafo.agregar_ciudad("B")
-mi_grafo.agregar_ciudad("C")
-mi_grafo.agregar_ciudad("D")
-mi_grafo.agregar_ciudad("E")
+        for conexion in self.conexiones:
+            if conexion.poblacion1.nombre == origen and conexion.poblacion2.nombre not in visitados:
+                distancia_actual, ruta_actual = self._encontrar_ruta(conexion.poblacion2.nombre, destino, ruta_actual + [conexion], visitados)
+                if distancia_actual < distancia_minima:
+                    distancia_minima = distancia_actual
+                    ruta_optima = ruta_actual
+            elif conexion.poblacion2.nombre == origen and conexion.poblacion1.nombre not in visitados:
+                distancia_actual, ruta_actual = self._encontrar_ruta(conexion.poblacion1.nombre, destino, ruta_actual + [conexion], visitados)
+                if distancia_actual < distancia_minima:
+                    distancia_minima = distancia_actual
+                    ruta_optima = ruta_actual
 
-# Agregar conexiones con distancias
-mi_grafo.agregar_conexion("A", "B", 10)
-mi_grafo.agregar_conexion("B", "C", 6)
-mi_grafo.agregar_conexion("A", "C", 15)
-mi_grafo.agregar_conexion("C", "D", 8)
-mi_grafo.agregar_conexion("B", "D", 3)
-mi_grafo.agregar_conexion("A", "D", 8)
-mi_grafo.agregar_conexion("C", "E", 9)
+        visitados.remove(origen)
 
-# Mostrar grafo
-mi_grafo.mostrar_grafo()
+        return distancia_minima, ruta_optima
 
-# Mostrar registro ordenado de distancias
-mi_grafo.BST.mostrar_ordenado()
+    def _generar_rutas(self, ruta_actual, origen, destino, rutas, visitados):
+        if origen in visitados:
+            return
 
-# Encontrar la ruta más corta
-mi_grafo.ruta_mas_corta("A", "D")
+        if origen == destino:
+            rutas.append(ruta_actual)
+            return
 
-# Construir el árbol
-class NodoBST:
-    def __init__(self, clave, valor):
-        self.clave = clave
-        self.valor = valor
-        self.izquierdo = None
-        self.derecho = None
+        visitados.add(origen)
 
-class BST:
-    def __init__(self):
-        self.raiz = None
+        for conexion in self.conexiones:
+                        if conexion.poblacion1.nombre == origen and conexion.poblacion2.nombre not in ruta_actual:
+                            self._generar_rutas(ruta_actual + [conexion], conexion.poblacion2.nombre, destino, rutas, visitados)
+                        elif conexion.poblacion2.nombre == origen and conexion.poblacion1.nombre not in ruta_actual:
+                          self._generar_rutas(ruta_actual + [conexion], conexion.poblacion1.nombre, destino, rutas, visitados)
 
-    def agregar(self, clave, valor):
-        nuevo_nodo = NodoBST(clave, valor)
+        visitados.remove(origen)
 
-        if self.raiz is None:
-            self.raiz = nuevo_nodo
-        else:
-            self._agregar_recursivo(self.raiz, nuevo_nodo)
+# Crear una instancia de la clase GrafoCiudades
+grafo = GrafoCiudades()
 
-    def _agregar_recursivo(self, nodo_actual, nuevo_nodo):
-        if nuevo_nodo.clave < nodo_actual.clave:
-            if nodo_actual.izquierdo is None:
-                nodo_actual.izquierdo = nuevo_nodo
-            else:
-                self._agregar_recursivo(nodo_actual.izquierdo, nuevo_nodo)
-        else:
-            if nodo_actual.derecho is None:
-                nodo_actual.derecho = nuevo_nodo
-            else:
-                self._agregar_recursivo(nodo_actual.derecho, nuevo_nodo)
+# Agregar poblaciones al grafo
+grafo.agregar_poblacion("Barcelona")
+grafo.agregar_poblacion("Valencia")
+grafo.agregar_poblacion("Madrid")
+grafo.agregar_poblacion("Sevilla")
 
-    def mostrar_ordenado(self):
-        self._mostrar_ordenado_recursivo(self.raiz)
+# Agregar conexiones entre las poblaciones
+grafo.agregar_conexion("Barcelona", "Valencia", 350)
+grafo.agregar_conexion("Valencia", "Madrid", 350)
+grafo.agregar_conexion("Madrid", "Sevilla", 500)
 
-    def _mostrar_ordenado_recursivo(self, nodo_actual):
-        if nodo_actual is not None:
-            self._mostrar_ordenado_recursivo(nodo_actual.izquierdo)
-            print(f'Distancia: {nodo_actual.clave}, Ciudades: {nodo_actual.valor}')
-            self._mostrar_ordenado_recursivo(nodo_actual.derecho)
+# Visualizar el grafo
+grafo.visualizar_grafo()
+
+# Obtener la ruta más corta entre dos poblaciones
+origen = input("¿Desde qué población quieres hacer el recorrido?: ")
+destino = input("¿Hasta qué población quieres hacer el recorrido?: ")
+
+grafo.ruta_mas_corta(origen, destino)
+
+# Obtener todas las rutas posibles entre dos poblaciones
+grafo.todas_las_rutas_posibles(origen, destino) 
 
 
